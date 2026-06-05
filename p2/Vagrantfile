@@ -1,0 +1,19 @@
+Vagrant.configure("2") do |config|
+	# --- general config --- #
+	config.vm.box = "debian/bookworm64"
+
+	config.vm.hostname = "0xEr3b0sS"
+	config.vm.network :private_network, ip: "192.168.56.110"
+
+	config.vm.provider "virtualbox" do |vb|
+		vb.name = "0xEr3b0sS"
+		vb.memory = "1024"
+		vb.cpus = 1
+	end
+
+	config.vm.provision "shell", inline: <<-SHELL
+		echo "=== SERVER Kubernetes started ==="
+		echo "IP : 192.168.56.110"
+	SHELL
+	config.vm.provision "shell", path: "scripts/setup.sh"
+end
