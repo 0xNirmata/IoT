@@ -1,25 +1,28 @@
 #!/bin/bash
-# server
+set -euo pipefail
 
-set -e
+echo "=== Starting installation script (Server) ==="
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update -qq
+apt-get upgrade -y -qq
+apt-get install -y -qq curl
 
 ip_server="192.168.56.110"
-shared_file="/vagrant/node-token"
-iface=$(ip -o -4 addr show | grep "192.168.56.110" | awk '{print $2}')
+iface=$(ip -o -4 addr show | grep "$ip_server" | awk '{print $2}')
 
-echo "=== Starting installation script ==="
-apt update && apt -y upgrade
-apt install -y curl
+echo "Installing k3s server..."
+curl -sfL https://get.k3s.io | \
+  INSTALL_K3S_EXEC="--node-ip=$ip_server --flannel-iface=$iface" sh -s - server > /dev/null 2>&1
 
-# download k3s
-curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--node-ip=$ip_server --flannel-iface=$iface" sh -
-
-# token for workers
+# Attente du token
 while [ ! -f /var/lib/rancher/k3s/server/node-token ]; do
-	echo "[LOG] wait for token"
-	sleep 2
+  echo "[LOG] Waiting for token..."
+  sleep 3
 done
-echo "[LOG] token received"
 
-cat /var/lib/rancher/k3s/server/node-token > $shared_file
+cp /var/lib/rancher/k3s/server/node-token /vagrant/node-token
+echo "[LOG] Token successfully written to /vagrant/node-token"
+echo "=== k3s Server is ready ==="
 
