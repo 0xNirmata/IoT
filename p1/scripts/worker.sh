@@ -11,6 +11,9 @@ while [ ! -f /vagrant/node-token ]; do
 done
 echo "[LOG] token received"
 
+apt update && apt -y upgrade
+apt install -y curl
+
 token=$(cat "/vagrant/node-token")
 server_url="https://192.168.56.110:6443"
 iface=$(ip -o -4 addr show | grep "192.168.56.111" | awk '{print $2}')
