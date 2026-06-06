@@ -1,2 +1,13 @@
 *.md
 !README.md
+
+# Vagrant
+.vagrant/
+
+# Token transmis entre VMs (généré au runtime)
+*/node-token
+p*/node-token
+
+# Fichiers système
+.DS_Store
+*.log
