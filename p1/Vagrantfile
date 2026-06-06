@@ -13,10 +13,6 @@ Vagrant.configure("2") do |config|
 			vb.cpus = 1
 		end
 
-		server.vm.provision "shell", inline: <<-SHELL
-			echo "=== SERVER Kubernetes started ==="
-			echo "IP : 192.168.56.110"
-		SHELL
 		server.vm.provision "shell", path: "scripts/server.sh"
 	end
 
@@ -31,10 +27,6 @@ Vagrant.configure("2") do |config|
 			vb.cpus = 1
 		end
 
-		worker.vm.provision "shell", inline: <<-SHELL
-			echo "=== WORKER Kubernetes started ==="
-			echo "IP : 192.168.56.111"
-		SHELL
 		worker.vm.provision "shell", path: "scripts/worker.sh"
 	end
 
