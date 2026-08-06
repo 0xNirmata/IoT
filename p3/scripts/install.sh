@@ -8,10 +8,10 @@ sudo systemctl enable --now docker
 sudo usermod -aG docker $USER
 
 echo "=== 2. Instalando K3d ==="
-curl -s https://githubusercontent.com | TAG=v5.6.0 bash
+curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.6.0 bash
 
 echo "=== 3. Instalando Kubectl ==="
-curl -LO "https://k8s.io(curl -L -s https://k8s.io)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm kubectl
 

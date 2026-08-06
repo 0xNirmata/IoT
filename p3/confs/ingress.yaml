@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1 
 kind: Ingress 
 metadata:   
-  name: wil-playground-ingress   
+  name: rmarcas-playground-ingress   
   namespace: dev 
 spec:   
   rules:   
@@ -11,6 +11,6 @@ spec:
       pathType: Prefix         
       backend:           
         service:             
-        name: wil-playground-service             
-        port:               
-          number: 8888
+          name: rmarcas-playground-service             
+          port:               
+            number: 8888

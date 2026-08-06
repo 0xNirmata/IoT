@@ -1,0 +1,40 @@
+global:
+  hosts:
+    domain: 127.0.0.1.nip.io
+
+  edition: ce
+
+
+certmanager:
+  install: false
+
+
+prometheus:
+  install: false
+
+
+gitlab-runner:
+  install: false
+
+
+nginx-ingress:
+  enabled: true
+
+
+redis:
+  resources:
+    requests:
+      memory: 256Mi
+
+
+postgresql:
+  resources:
+    requests:
+      memory: 256Mi
+
+
+gitlab:
+  webservice:
+    resources:
+      requests:
+        memory: 512Mi
