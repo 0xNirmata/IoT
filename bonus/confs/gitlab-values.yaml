@@ -20,7 +20,8 @@ gitlab-runner:
 nginx-ingress:
   enabled: true
 
-
+# bajar la memoria de PostgreSQL,
+# Redis y webservice para que no te tire abajo la máquina de la escuela
 redis:
   resources:
     requests:

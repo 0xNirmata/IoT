@@ -17,7 +17,7 @@ rm kubectl
 
 echo "=== 4. Creando el Clúster K3d para el proyecto ==="
 # Redirige el puerto 8080 (para ArgoCD) y el 8888 (para la app de Wil)
-k3d cluster create iot-cluster \
+k3d cluster create iot-cluster \ #... --wait en caso no sepa a quien conectarse
   -p "8080:80@loadbalancer" \
   -p "8888:8888@loadbalancer" \
   --agents 1 \

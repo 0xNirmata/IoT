@@ -61,7 +61,7 @@ helm install gitlab gitlab/gitlab \
 
 echo "=== Waiting ==="
 
-kubectl get pods -n gitlab
+kubectl get pods -n gitlab -w #w monitoreo de pods , puede tardar entre 5 y 10 min
 
 
 echo "=== Bonus installation finished ==="
