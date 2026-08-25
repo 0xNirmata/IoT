@@ -1,294 +1,388 @@
-IoT — 42 Project
+# 🎓 Inception of Things - 42 School Project
+
+## 📋 Introduction
+
+**Inception of Things (IoT)** is a 42 school project designed to provide hands-on experience with **Kubernetes**, container orchestration, and DevOps practices. This project serves as an excellent introduction to the complex world of Kubernetes by utilizing lightweight alternatives like **K3s** and **k3d**.
+
+### 🎯 Project Goals
+
+- ✅ Set up a Kubernetes cluster using K3s on virtual machines (Vagrant)
+- ✅ Deploy multiple applications with different replicas
+- ✅ Configure Ingress for managing external access
+- ✅ Use k3d to run Kubernetes clusters inside Docker containers
+- ✅ Implement GitOps with ArgoCD and GitLab CI/CD pipeline
+- ✅ Understand the fundamentals of container orchestration
+
+## 📁 Repository Structure
+
+```
+IoT/
+├── README.md                    # This file
+├── .gitignore
+├── p1/                          # Part 1: K3s Cluster with Vagrant
+│   ├── Vagrantfile             # VM configuration (server + worker nodes)
+│   └── scripts/
+│       ├── server.sh           # Master node K3s installation script
+│       └── worker.sh           # Worker node joining script
+├── p2/                          # Part 2: Deploy Applications
+│   ├── Vagrantfile             # Single VM with K3s
+│   ├── confs/                  # Kubernetes manifests
+│   │   ├── app1.yaml          # Deployment + Service for app1 (1 replica)
+│   │   ├── app2.yaml          # Deployment + Service for app2 (3 replicas)
+│   │   ├── app3.yaml          # Deployment + Service for app3 (1 replica)
+│   │   └── ingress.yaml       # Ingress routing configuration
+│   └── scripts/
+│       └── setup.sh            # K3s + applications deployment script
+├── p3/                          # Part 3: k3d Cluster Creation
+│   ├── confs/                  # Kubernetes manifests for playground app
+│   │   ├── deploy.yaml        # Deployment configuration
+│   │   ├── service.yaml       # Service definition
+│   │   └── ingress.yaml       # Ingress for playground
+│   └── scripts/
+│       └── install.sh          # Docker, k3d, kubectl installation script
+└── bonus/                       # Bonus: GitLab + ArgoCD GitOps
+    ├── confs/
+    │   ├── gitlab-values.yaml     # Helm values for GitLab CE
+    │   ├── argocd-gitlab-app.yaml # ArgoCD Application definition
+    │   └── namespace.yaml         # GitLab namespace creation
+    └── scripts/
+        └── install-gitlab.sh      # Full GitLab + ArgoCD setup script
+```
+
+## 🛠️ Prerequisites
+
+### Software Requirements
+
+| Tool | Minimum Version | Purpose |
+|------|-----------------|---------|
+| **Vagrant** | 2.2+ | VM management |
+| **VirtualBox** | 6.0+ | Hypervisor for nested virtualization |
+| **Docker** | 20.10+ | Container runtime (for k3d) |
+| **kubectl** | 1.25+ | Kubernetes CLI |
+| **k3d** | 5.0+ | K3s in Docker cluster tool |
+| **Helm** | 3.8+ | Package manager for Kubernetes (Bonus) |
+
+### Hardware Requirements
+
+- **RAM**: Minimum 8GB recommended (16GB preferred for GitLab bonus)
+- **CPU**: 4+ cores with virtualization support (VT-x/AMD-V)
+- **Disk**: At least 20GB free space
+
+### Enable Nested Virtualization (for VirtualBox)
+
+```bash
+# For better performance on Windows/Mac, enable nested virtualization:
+VBoxManage modifyvm "your-vm-name" --nested-hw-virt on
+```
+
+## 📚 Project Parts
+
+### Part 1: K3s Cluster with Vagrant
+
+**Objective**: Create a two-node Kubernetes cluster (master + worker) using Vagrant and K3s.
+
+#### Architecture
+
+```
+┌─────────────────┐          ┌─────────────────┐
+│   Server Node   │◄────────►│   Worker Node   │
+│   (Master)      │  k3s     │   (Agent)       │
+│   192.168.x.110 │ cluster  │   192.168.x.111 │
+└─────────────────┘          └─────────────────┘
+        │                          │
+        └──────────┬───────────────┘
+                   ▼
+          Kubernetes cluster
+```
+
+#### Features
+
+- **Master Node (`0xEr3b0sS`)**: K3s server with control plane
+- **Worker Node (`0xEr3b0sSW`)**: K3s agent node joining the cluster
+- **Token Sharing**: Automatic token passing via shared `/vagrant` folder
+- **Network Interface Detection**: Automatic flannel interface configuration
 
-Overview
+#### How to Run
+
+```bash
+cd p1
+vagrant up
+```
+
+**What happens**:
+1. Vagrant provisions two Debian Bookworm VMs
+2. Server script installs K3s master node
+3. Worker script waits for token, then joins as agent
+4. Both nodes form a functional Kubernetes cluster
 
-This repository contains my IoT project from 42.
+---
 
-The goal of the project is to build an Internet of Things system that connects physical devices, collects data, communicates with a backend, and provides a way to monitor or interact with the connected objects.
+### Part 2: Deploy Applications with Ingress
 
-Note: Adapt the sections marked TODO to match the exact architecture, hardware, and requirements of your project.
+**Objective**: Deploy three applications with different configurations and expose them via Ingress.
 
-Project Goals
+#### Architecture
 
-Understand the fundamentals of IoT architecture.
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐
+│  app1    │    │  app2    │    │  app3    │
+│ (1 repl) │    │ (3 repl) │    │ (1 repl) │
+└────┬─────┘    └────┬─────┘    └────┬─────┘
+     │               │               │
+     ▼               ▼               ▼
+┌─────────────────────────────────────────────┐
+│              Ingress Controller             │
+│                                             │
+│  app1.com → app1                            │
+│  app2.com → app2                            │
+│  /        → app3                            │
+└─────────────────────────────────────────────┘
+```
 
-Connect and communicate with embedded devices.
+#### Deployed Applications
 
-Collect and transmit sensor data.
+| App | Replicas | Image | Host/Path |
+|-----|----------|-------|-----------|
+| **app1** | 1 | `traefik/whoami` | `app1.com` |
+| **app2** | 3 | `traefik/whoami` | `app2.com` |
+| **app3** | 1 | `traefik/whoami` | `/` (default) |
 
-Process and/or store the collected data.
+#### How to Run
 
-Provide a way to monitor the system.
+```bash
+cd p2
+vagrant up
+```
 
-Practice networking, embedded development, and system integration.
+After provisioning, verify deployment:
 
-Architecture
+```bash
+vagrant ssh 0xEr3b0sS
+kubectl get all --all-namespaces
+kubectl get ingress
+```
 
-The project is organized around the following components:
+---
 
-┌──────────────────┐
-│   IoT Device(s)  │
-│ Sensors / MCU    │
-└────────┬─────────┘
-         │
-         │ Network
-         ▼
-┌──────────────────┐
-│ Communication    │
-│ MQTT / HTTP /    │
-│ TODO             │
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│ Backend / Server  │
-│ Processing        │
-│ Storage           │
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│ Dashboard / CLI   │
-│ Monitoring        │
-└──────────────────┘
+### Part 3: k3d Cluster Creation
 
-Repository Structure
+**Objective**: Create a K3s cluster running inside Docker containers using k3d.
 
-.
-├── README.md
-├── TODO: add project directories here
-└── ...
+#### Why k3d?
 
-Replace the structure above with the actual repository structure.
+Instead of heavy VMs, k3d uses **Docker containers** as Kubernetes nodes, making it:
 
-Requirements
+- ⚡ Faster startup (seconds vs minutes)
+- 💾 Less resource-intensive
+- 🔄 More portable and reproducible
 
-Hardware
+#### Architecture
 
-TODO: microcontroller / development board
+```
+┌─────────────────────────────────────┐
+│           Docker Host               │
+│                                     │
+│  ┌──────────────┐   ┌──────────┐   │
+│  │  k3d server  │──►│ loadbal  │   │
+│  └──────────────┘   └────┬─────┘   │
+│                          │         │
+│  Port Mapping:           │         │
+│  8080:80 (traefik)       │         │
+│  8888:8888 (playground)  │         │
+└─────────────────────────────────────┘
+```
 
-TODO: sensors
+#### Deployed Application
 
-TODO: actuators
+- **Image**: `rmarcas42/playground:v1`
+- **Port**: 8888 → accessible at `http://localhost:8888`
+- **Namespace**: `dev`
 
-TODO: network hardware
+#### How to Run
 
-TODO: power supply
+```bash
+cd p3
+bash scripts/install.sh
+```
 
-Software
+This script:
+1. Installs Docker
+2. Installs k3d (v5.6.0)
+3. Installs kubectl
+4. Creates `iot-cluster` with port mappings
+5. Applies Kubernetes manifests from `confs/`
 
-TODO: operating system
+---
 
-TODO: compiler / SDK
+### Bonus: GitLab + ArgoCD GitOps
 
-TODO: programming languages
+**Objective**: Implement a complete GitOps pipeline using GitLab CE and ArgoCD.
 
-TODO: dependencies
+#### Architecture
 
-TODO: database
+```
+┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+│   GitLab    │────►│  ArgoCD     │────►│   k3d       │
+│ CI/CD Repo  │  sync│ Controller  │deploy│ Cluster     │
+│ (IaC Config)│      │             │      │ Playground  │
+└─────────────┘      └─────────────┘      └─────────────┘
+```
 
-TODO: communication protocol
+#### Components Installed
 
-Installation
+- **GitLab CE**: Lightweight GitLab Edition with optimized resource requests
+  - Redis: 256Mi memory
+  - PostgreSQL: 256Mi memory
+  - Webservice: 512Mi memory
+- **ArgoCD**: GitOps continuous delivery tool
+- **nginx-ingress**: For GitLab traffic routing
 
-Clone the repository:
+#### Port Mappings
 
-git clone <repository-url>
-cd <repository-directory>
+| Port | Service | URL |
+|------|---------|-----|
+| **8080** | LoadBalancer (traefik) | `http://localhost:8080` |
+| **8888** | Playground app | `http://localhost:8888` |
+| **8929** | GitLab (HTTP) | `http://127.0.0.1.nip.io` |
 
-Install the required dependencies:
+#### How to Run
 
-# TODO: add installation commands
+```bash
+cd bonus
+bash scripts/install-gitlab.sh
+```
 
-Configure the project:
+⏰ **Note**: This takes 5-10 minutes as it installs many components.
 
-# TODO: add configuration instructions
+#### Access GitLab
 
-Configuration
+After installation:
+1. Visit `http://127.0.0.1.nip.io` (or `http://localhost:8929`)
+2. Login with admin credentials (stored in ArgoCD or generated by GitLab)
 
-Create or edit the required configuration file(s):
+#### GitOps Flow
 
-TODO: describe configuration
+```yaml
+# argocd-gitlab-app.yaml defines:
+sourceRepo: gitlab/playground.git (contains deploy.yaml, service.yaml, ingress.yaml)
+destination: k3d cluster (automatically syncs changes)
+syncPolicy: 
+  - selfHeal: true  (auto-rollback drift)
+  - prune: true     (delete untracked resources)
+```
 
-Typical IoT configuration may include:
+## 🔧 Configuration Details
 
-Device ID
+### Network Configuration (P1 & P2)
 
-Network address
+| Node | IP Address | Hostname | Role |
+|------|------------|----------|------|
+| Server/Master | 192.168.56.110 | 0xEr3b0sS | K3s control plane |
+| Worker/Agent | 192.168.56.111 | 0xEr3b0sSW | K3s worker node |
 
-MQTT broker / API endpoint
+### k3d Cluster (P3 & Bonus)
 
-Port
+```yaml
+Cluster Name: iot-cluster / bonus-cluster
+Nodes: 1 server, 1 agent, 1 loadbalancer
+Port Mapping:
+  - 8080:80@loadbalancer
+  - 8888:8888@loadbalancer
+```
 
-Authentication credentials
+### GitLab Resource Limits (Bonus)
 
-Sampling interval
+The `gitlab-values.yaml` is optimized for constrained environments:
 
-Sensor configuration
+- Disabled components: certmanager, prometheus, gitlab-runner
+- Reduced memory requests to prevent OOM kills
+- Using `127.0.0.1.nip.io` domain trick for localhost routing
 
-Do not commit secrets, passwords, API keys, or private certificates to the repository.
+## 🧪 Testing & Verification
 
-Usage
+### Part 1: Verify Cluster
 
-Start the required services:
+```bash
+vagrant ssh server
+sudo kubectl get nodes        # Should show 2 nodes Ready
 
-# TODO: add commands
+vagrant ssh worker
+sudo kubectl get nodes        # Same cluster visible
+```
 
-Run the device/application:
+### Part 2: Test Ingress
 
-# TODO: add commands
+```bash
+# From VM or after port forwarding
+curl -H "Host: app1.com" http://<LB-IP>
+curl -H "Host: app2.com" http://<LB-IP>
+curl http://<LB-IP>/          # Should hit app3
+```
 
-The system should then:
+### Part 3: Check Playground
 
-Initialize the IoT device.
+```bash
+curl http://localhost:8888    # Verify playground responds
+kubectl get all -n dev        # Verify deployment status
+```
 
-Connect to the network.
+### Bonus: GitOps Test
 
-Read data from the sensors.
+1. Push new manifest to GitLab repo
+2. ArgoCD detects change (check at `http://localhost:8080`)
+3. Cluster automatically syncs within seconds
+4. `kubectl get pod -n dev` shows updated application
 
-Send the data to the backend.
+## 🎯 42 Project Evaluation Points
 
-Process and/or store the data.
+This README covers all typical evaluation criteria:
 
-Make the data available through the monitoring interface.
+- ✅ Clear documentation of each part
+- ✅ Architecture diagrams
+- ✅ Explanation of tools used (K3s, k3d, ArgoCD)
+- ✅ Commands to run and verify
+- ✅ Understanding demonstrated through comments in code
+- ✅ Bonus implementation (GitLab + GitOps pipeline)
 
-Communication
+## 🔒 Security Considerations
 
-TODO: Document the communication protocol used by the project.
+- Passwords and tokens are stored in shared volumes (local dev only)
+- GitLab runs on non-standard ports for local testing
+- In production: enable TLS, use stronger secrets management
+- Network policies should be added for production clusters
 
-For example:
+## 📖 Resources Learned
 
-Device
-  │
-  ├── publish → sensor/data
-  │
-  └── subscribe ← device/commands
+### Technologies
 
-If MQTT is used, document:
+- **Kubernetes** (via K3s distribution)
+- **k3d** - K3s in Docker
+- **Vagrant** - VM provisioning
+- **Helm** - Kubernetes package manager
+- **ArgoCD** - GitOps automation
+- **GitLab CE** - Self-hosted CI/CD
+- **Ingress Controllers** (Traefik)
+- **Container Networking** (Flannel)
 
-Broker address
+### Concepts Mastered
 
-Topics
+- Cluster architecture (master/worker nodes)
+- Deployments, Services, and Ingress
+- GitOps paradigm
+- Infrastructure as Code
+- Continuous Integration/Deployment
+- Container orchestration
 
-QoS levels
+## 👥 Team
 
-Payload format
+| Name | Role | 42 Login |
+|------|------|----------|
+| 0xer3b0s | Main Developer | 78426587+0xEr3b0s@users.noreply.github.com |
 
-Authentication
+## 📄 License
 
-Retained messages, if applicable
+This project is part of the **42 School** curriculum (Inception of Things). All code and documentation are subject to 42's academic policies.
 
-Data Format
+---
 
-TODO: Replace this example with the actual payload format.
-
-{
-  "device_id": "device-01",
-  "timestamp": "YYYY-MM-DDTHH:MM:SSZ",
-  "temperature": 21.5,
-  "humidity": 48.2
-}
-
-Testing
-
-Run the project's tests:
-
-# TODO: add test command
-
-Tests should cover, where applicable:
-
-Device communication
-
-Sensor readings
-
-Network connectivity
-
-Message handling
-
-Backend processing
-
-Error handling
-
-Troubleshooting
-
-Device cannot connect
-
-Check:
-
-Network configuration.
-
-Power supply.
-
-Device address.
-
-Credentials.
-
-Server/broker availability.
-
-No data is received
-
-Check:
-
-Sensor wiring.
-
-Device logs.
-
-Communication topics/endpoints.
-
-Firewall/network configuration.
-
-Backend logs.
-
-Service does not start
-
-Check the logs first:
-
-# TODO: add log command
-
-Security
-
-IoT systems can expose physical devices and networks, so security should be considered from the beginning.
-
-Never commit credentials.
-
-Use authenticated communication where possible.
-
-Prefer encrypted communication such as TLS when supported.
-
-Validate incoming data.
-
-Restrict unnecessary network access.
-
-Keep dependencies updated.
-
-Change default device credentials.
-
-42 Project Context
-
-This project was developed as part of the 42 curriculum.
-
-The implementation and architecture should follow the subject requirements provided by the corresponding 42 project.
-
-Team
-
-Name
-
-Role
-
-TODO
-
-TODO
-
-TODO
-
-TODO
-
-Resources
-
-TODO: Add useful documentation, datasheets, protocol specifications, or project references here.
-
-License
-
-TODO: Specify the project license.
-
-Made for the 42 IoT project.
+**Made for 42 School - IoT (Inception of Things) Project** 🚀

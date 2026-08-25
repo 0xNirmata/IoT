@@ -16,12 +16,21 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm kubectl
 
 echo "=== 4. Creando el Clúster K3d para el proyecto ==="
-# Redirige el puerto 8080 (para ArgoCD) y el 8888 (para la app de Wil)
-k3d cluster create iot-cluster \ #... --wait en caso no sepa a quien conectarse
+# Redirige el puerto 8080 (para la app) y el 8888 (para playground)
+k3d cluster create iot-cluster \
   -p "8080:80@loadbalancer" \
   -p "8888:8888@loadbalancer" \
   --agents 1 \
   --wait
 
+# Crear namespace antes de desplegar
+kubectl create namespace dev || echo "Namespace dev already exists"
+
+# Aplicar manifestos
+kubectl apply -f confs/deploy.yaml
+kubectl apply -f confs/service.yaml
+kubectl apply -f confs/ingress.yaml
+
 echo "=== ¡Todo listo! Clúster creado con éxito ==="
 kubectl get nodes
+kubectl get all -n dev

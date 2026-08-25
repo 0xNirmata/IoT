@@ -20,22 +20,51 @@ gitlab-runner:
 nginx-ingress:
   enabled: true
 
-# bajar la memoria de PostgreSQL,
-# Redis y webservice para que no te tire abajo la máquina de la escuela
+
+# Resource limits optimized for school machines
+# Lower values = faster OOM errors, higher values = GitLab crashes
+
 redis:
   resources:
     requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
       memory: 256Mi
 
 
 postgresql:
   resources:
     requests:
+      cpu: 100m
       memory: 256Mi
+    limits:
+      memory: 512Mi
 
 
 gitlab:
   webservice:
     resources:
       requests:
+        cpu: 100m
         memory: 512Mi
+      limits:
+        memory: 1Gi
+  
+  sidekiq:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 256Mi
+
+
+# Disable heavy components
+gitaly:
+  replicas: 1
+  resources:
+    requests:
+      memory: 256Mi
+    limits:
+      memory: 512Mi

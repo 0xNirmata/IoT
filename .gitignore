@@ -10,4 +10,13 @@ p*/node-token
 
 # Fichiers système
 .DS_Store
+Thumbs.db
 *.log
+
+# Environment files with secrets
+.env.local
+.env.*.local
+
+# K3s/Cluster tokens (generated at runtime)
+*.token
+~/.kube/config
