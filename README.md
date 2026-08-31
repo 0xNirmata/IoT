@@ -1,8 +1,8 @@
-# 🎓 Inception of Things - 42 School Project
+# 🎓 Inception of Things
 
 ## 📋 Introduction
 
-**Inception of Things (IoT)** is a 42 school project designed to provide hands-on experience with **Kubernetes**, container orchestration, and DevOps practices. This project serves as an excellent introduction to the complex world of Kubernetes by utilizing lightweight alternatives like **K3s** and **k3d**.
+**Inception of Things (IoT)** is a project designed to provide hands-on experience with **Kubernetes**, container orchestration, and DevOps practices. This project serves as an excellent introduction to the complex world of Kubernetes by utilizing lightweight alternatives like **K3s** and **k3d**.
 
 ### 🎯 Project Goals
 
@@ -333,7 +333,7 @@ kubectl get all -n dev        # Verify deployment status
 3. Cluster automatically syncs within seconds
 4. `kubectl get pod -n dev` shows updated application
 
-## 🎯 42 Project Evaluation Points
+## 🎯 Project Evaluation Points
 
 This README covers all typical evaluation criteria:
 
@@ -375,14 +375,7 @@ This README covers all typical evaluation criteria:
 
 ## 👥 Team
 
-| Name | Role | 42 Login |
+| Name | Role | Contact |
 |------|------|----------|
 | 0xer3b0s | Main Developer | 78426587+0xEr3b0s@users.noreply.github.com |
 
-## 📄 License
-
-This project is part of the **42 School** curriculum (Inception of Things). All code and documentation are subject to 42's academic policies.
-
----
-
-**Made for 42 School - IoT (Inception of Things) Project** 🚀
