@@ -377,5 +377,5 @@ This README covers all typical evaluation criteria:
 
 | Name | Role | Contact |
 |------|------|----------|
-| 0xer3b0s | Main Developer | 78426587+0xEr3b0s@users.noreply.github.com |
+| 0xNirmata | Main Developer | 78426587+0xNirmata@users.noreply.github.com |
 
